@@ -292,11 +292,40 @@ head(catch_long)</code></pre>
 <pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
 <pre class="r"><code>sd_region &lt;- catch_long %&gt;%
   group_by(Region) %&gt;%
-  summarise(std_region = sd(catch_thousands))</code></pre>
+  summarise(sd_region = sd(catch_thousands))</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre class="r"><code>cv_year &lt;- catch_long %&gt;%
+  group_by(Year) %&gt;%
+  summarize(cv_year = sd(catch_thousands) / mean(catch_thousands))</code></pre>
 <pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
 </div>
 <div id="join-to-regions-definitions" class="section level1">
 <h1>Join to Regions Definitions</h1>
+<p>Join getting new data first Left join - should have same number of results as in your left table (if you have more, you likely have repeated values) Should have # of columns as the same number of cols in left + number of cols in right - number of columns you’re joining over L (3), R (2), joining on 1 = 3+2-1 = 4</p>
+<pre class="r"><code>region_defs &lt;- read.csv(&quot;https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.303.1&quot;) %&gt;% 
+    select(code, mgmtArea)
+  
+head(region_defs)</code></pre>
+<pre><code>##      code                                  mgmtArea
+## 1     GSE              Unallocated Southeast Alaska
+## 2     NSE                 Northern Southeast Alaska
+## 3     SSE                 Southern Southeast Alaska
+## 4     YAK                                   Yakutat
+## 5 PWSmgmt      Prince William Sound Management Area
+## 6     BER Bering River Subarea Copper River Subarea</code></pre>
+<p>Left join using the by = c() function to specify if the column names that join the 2 are named differently Or in the step above you could have used the rename function to rename and then you wouldn’t have to do the by = c() function here</p>
+<pre class="r"><code>catch_joined &lt;- left_join(catch_long, region_defs, by = c(&quot;Region&quot; = &quot;code&quot;))
+
+head(catch_joined)</code></pre>
+<pre><code>## # A tibble: 6 × 6
+##   Region  Year species catch_thousands catch mgmtArea                 
+##   &lt;chr&gt;  &lt;int&gt; &lt;chr&gt;             &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;                    
+## 1 SSE     1886 Chinook               0     0 Southern Southeast Alaska
+## 2 SSE     1886 Sockeye               5  5000 Southern Southeast Alaska
+## 3 SSE     1886 Coho                  0     0 Southern Southeast Alaska
+## 4 SSE     1886 Pink                  0     0 Southern Southeast Alaska
+## 5 SSE     1886 Chum                  0     0 Southern Southeast Alaska
+## 6 SSE     1887 Chinook               0     0 Southern Southeast Alaska</code></pre>
 </div>
 
 

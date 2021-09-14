@@ -133,13 +133,36 @@ mean_region <- catch_long %>%
 ```{r}
 sd_region <- catch_long %>%
   group_by(Region) %>%
-  summarise(std_region = sd(catch_thousands))
+  summarise(sd_region = sd(catch_thousands))
+
+cv_year <- catch_long %>%
+  group_by(Year) %>%
+  summarize(cv_year = sd(catch_thousands) / mean(catch_thousands))
+```
+
+# Join to Regions Definitions
+
+Join getting new data first 
+Left join - should have same number of results as in your left table (if you have more, you likely have repeated values)
+Should have # of columns as the same number of cols in left + number of cols in right - number of columns you're joining over
+L (3), R (2), joining on 1 = 3+2-1 = 4
+```{r}
+region_defs <- read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.303.1") %>% 
+    select(code, mgmtArea)
+  
+head(region_defs)
+```
+
+Left join using the by = c() function to specify if the column names that join the 2 are named differently
+Or in the step above you could have used the rename function to rename and then you wouldn't have to do the by = c() function here
+```{r}
+catch_joined <- left_join(catch_long, region_defs, by = c("Region" = "code"))
+
+head(catch_joined)
 ```
 
 
 
-
-# Join to Regions Definitions
 
 
 
