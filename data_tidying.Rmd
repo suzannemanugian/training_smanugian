@@ -1,0 +1,85 @@
+---
+title: "Data_Cleaning"
+output: html_document
+---
+
+# September 2020 class, Week 1, Day 2
+Data cleaning exercise
+Filename in R on workstation -- > 20210914_NCEAS_DSP_Wk1D2.R
+
+## Clean workspace
+```{r clear_workspace}
+rm(list=ls())
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# SCM Notes:
+Message = FALSE in chunk option will get the message to not display.
+However, I learned something about the messages
+Type out "package_name::function_name()" to get it to not default the first one it encounters (if the one you want is the 2nd one)
+Code chunk shortcut: ctrl / alt / i
+Pipe shortcut: ctrl / shift / m
+
+# Install Packages
+```{r library_packages, message = FALSE}
+library(dplyr)
+library(tidyr)
+```
+
+# Data sources
+Load the cvs file from the website, right-click the download button to get the url
+Data from [KNB](https://knb.ecoinformatics.org/view/df35b.304.2)
+```{r, get_data}
+data_catch <- read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1")
+```
+
+# Clean and reshape data
+[1] Remove unnecessary columns
+[2] Check column types
+[3] Reshape data
+
+[1] 
+Remove unnecessary columns
+Takes data_catch dataframe and then a selection of that makes the data_catch_clean dataframe.
+Can select what you want (below)
+But can also select what you want to drop
+select(-All, -notesRegCode)
+```{r, drop_unnecessary}
+data_catch_clean <- data_catch %>% 
+  select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum)
+
+glimpse(data_catch_clean)
+```
+[2]
+Check column types
+Seems like Chinook is character but it needs to be integer
+
+```{r, catch_clean}
+catch_clean <- data_catch_clean %>% 
+  mutate(Chinook = as.integer(Chinook))
+```
+
+Explore why there is an error
+There is one, line 401, which is "I" and not "1"
+```{r}
+xx <- which(is.na(catch_clean$Chinook))
+xx
+```
+Remove the error, replace the "I" with "1"
+Replace I with the character 1 otherwise leave it as is
+Then pipe that and change the Chinook value to integer
+```{r}
+catch_clean <- data_catch %>% 
+  mutate(Chinook = if_else(Chinook == "I", "1", Chinook)) %>% 
+  mutate(Chinook = as.integer(Chinook))
+
+glimpse(catch_clean)
+```
+
+
+
+
+# Join to Regions Definitions
