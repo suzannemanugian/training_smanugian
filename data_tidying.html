@@ -192,7 +192,7 @@ library(tidyr)</code></pre>
 </div>
 <div id="clean-and-reshape-data" class="section level1">
 <h1>Clean and reshape data</h1>
-<p>[1] Remove unnecessary columns [2] Check column types [3] Reshape data</p>
+<p>[1] Remove unnecessary columns [2] Check column types [3] Reshape data [4] group and summarize data</p>
 <p>[1] Remove unnecessary columns Takes data_catch dataframe and then a selection of that makes the data_catch_clean dataframe. Can select what you want (below) But can also select what you want to drop select(-All, -notesRegCode)</p>
 <pre class="r"><code>data_catch_clean &lt;- data_catch %&gt;% 
   select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum)
@@ -218,23 +218,82 @@ glimpse(data_catch_clean)</code></pre>
 <pre class="r"><code>xx &lt;- which(is.na(catch_clean$Chinook))
 xx</code></pre>
 <pre><code>## [1] 401</code></pre>
+<pre class="r"><code>xy &lt;- which(is.na(data_catch_clean$Chinook))
+  xy</code></pre>
+<pre><code>## integer(0)</code></pre>
 <p>Remove the error, replace the “I” with “1” Replace I with the character 1 otherwise leave it as is Then pipe that and change the Chinook value to integer</p>
 <pre class="r"><code>catch_clean &lt;- data_catch %&gt;% 
   mutate(Chinook = if_else(Chinook == &quot;I&quot;, &quot;1&quot;, Chinook)) %&gt;% 
   mutate(Chinook = as.integer(Chinook))
 
-glimpse(catch_clean)</code></pre>
+data_catch_clean &lt;- catch_clean %&gt;% 
+  select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum)
+
+glimpse(data_catch_clean)</code></pre>
 <pre><code>## Rows: 1,708
-## Columns: 9
-## $ Region       &lt;chr&gt; &quot;SSE&quot;, &quot;SSE&quot;, &quot;SSE&quot;, &quot;SSE&quot;, &quot;SSE&quot;, &quot;SSE&quot;, &quot;SSE&quot;, &quot;SSE&quot;, &quot;…
-## $ Year         &lt;int&gt; 1886, 1887, 1888, 1889, 1890, 1891, 1892, 1893, 1894, 189…
-## $ Chinook      &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 5, 9, 12, 0, 3, 4, 0, 4,…
-## $ Sockeye      &lt;int&gt; 5, 155, 224, 182, 251, 274, 207, 189, 253, 408, 989, 791,…
-## $ Coho         &lt;int&gt; 0, 0, 16, 11, 42, 24, 11, 1, 5, 8, 192, 161, 132, 139, 84…
-## $ Pink         &lt;int&gt; 0, 0, 0, 92, 0, 0, 8, 187, 529, 606, 996, 2218, 673, 1545…
-## $ Chum         &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 1, 2, 0, 0, 0, 102…
-## $ All          &lt;int&gt; 5, 155, 240, 285, 292, 298, 226, 377, 788, 1026, 2181, 31…
-## $ notesRegCode &lt;chr&gt; &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;…</code></pre>
+## Columns: 7
+## $ Region  &lt;chr&gt; &quot;SSE&quot;, &quot;SSE&quot;, &quot;SSE&quot;, &quot;SSE&quot;, &quot;SSE&quot;, &quot;SSE&quot;, &quot;SSE&quot;, &quot;SSE&quot;, &quot;SSE&quot;,…
+## $ Year    &lt;int&gt; 1886, 1887, 1888, 1889, 1890, 1891, 1892, 1893, 1894, 1895, 18…
+## $ Chinook &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 5, 9, 12, 0, 3, 4, 0, 4, 9, 3…
+## $ Sockeye &lt;int&gt; 5, 155, 224, 182, 251, 274, 207, 189, 253, 408, 989, 791, 708,…
+## $ Coho    &lt;int&gt; 0, 0, 16, 11, 42, 24, 11, 1, 5, 8, 192, 161, 132, 139, 84, 107…
+## $ Pink    &lt;int&gt; 0, 0, 0, 92, 0, 0, 8, 187, 529, 606, 996, 2218, 673, 1545, 204…
+## $ Chum    &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 1, 2, 0, 0, 0, 102, 343…</code></pre>
+<p>[3] reshape data</p>
+<p>Pivot longer, have wide table pivoting it to long first argument, columns over which you want to pivot over (not region or year) second argument = names to (column create out of column names) and values to (the actual catch data)</p>
+<pre class="r"><code>catch_long &lt;- data_catch_clean %&gt;% 
+  pivot_longer(cols = -c(Region, Year), names_to = &quot;species&quot;, values_to = &quot;catch&quot;)
+
+head(catch_long)</code></pre>
+<pre><code>## # A tibble: 6 × 4
+##   Region  Year species catch
+##   &lt;chr&gt;  &lt;int&gt; &lt;chr&gt;   &lt;int&gt;
+## 1 SSE     1886 Chinook     0
+## 2 SSE     1886 Sockeye     5
+## 3 SSE     1886 Coho        0
+## 4 SSE     1886 Pink        0
+## 5 SSE     1886 Chum        0
+## 6 SSE     1887 Chinook     0</code></pre>
+<p>Pivot wider is opposite of longer Just run through as an example</p>
+<pre class="r"><code>  catch_wide &lt;- catch_long %&gt;%
+  pivot_wider(names_from = Region, values_from = catch)
+
+head(catch_wide)</code></pre>
+<pre><code>## # A tibble: 6 × 20
+##    Year species   SSE   NSE   YAK   GSE   BER   COP   PWS   CKI   BRB   KSK
+##   &lt;int&gt; &lt;chr&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;
+## 1  1886 Chinook     0     0    NA     0    NA    NA    NA    NA     0    NA
+## 2  1886 Sockeye     5   113    NA     0    NA    NA    NA    NA     0    NA
+## 3  1886 Coho        0     0    NA     0    NA    NA    NA    NA     0    NA
+## 4  1886 Pink        0     0    NA     0    NA    NA    NA    NA     0    NA
+## 5  1886 Chum        0     0    NA     0    NA    NA    NA    NA     0    NA
+## 6  1887 Chinook     0     0    NA     0    NA    NA    NA    NA     0    NA
+## # … with 8 more variables: YUK &lt;int&gt;, NRS &lt;int&gt;, KTZ &lt;int&gt;, KOD &lt;int&gt;,
+## #   CHG &lt;int&gt;, SOP &lt;int&gt;, ALU &lt;int&gt;, NOP &lt;int&gt;</code></pre>
+<p>Rename catch_long override it with another catch_long This is “less brittle” than doing the rename in base R because it may break silently Then you may want to run mutate to get catch column that is actually number of fish</p>
+<pre class="r"><code>catch_long &lt;- catch_long %&gt;%
+  rename(catch_thousands = catch) %&gt;%
+  mutate(catch = catch_thousands * 1000)
+
+head(catch_long)</code></pre>
+<pre><code>## # A tibble: 6 × 5
+##   Region  Year species catch_thousands catch
+##   &lt;chr&gt;  &lt;int&gt; &lt;chr&gt;             &lt;int&gt; &lt;dbl&gt;
+## 1 SSE     1886 Chinook               0     0
+## 2 SSE     1886 Sockeye               5  5000
+## 3 SSE     1886 Coho                  0     0
+## 4 SSE     1886 Pink                  0     0
+## 5 SSE     1886 Chum                  0     0
+## 6 SSE     1887 Chinook               0     0</code></pre>
+<p>[4] group and summarize data</p>
+<pre class="r"><code>mean_region &lt;- catch_long %&gt;%
+  group_by(Region) %&gt;%
+  summarise(catch_mean = mean(catch_thousands))</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre class="r"><code>sd_region &lt;- catch_long %&gt;%
+  group_by(Region) %&gt;%
+  summarise(std_region = sd(catch_thousands))</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
 </div>
 <div id="join-to-regions-definitions" class="section level1">
 <h1>Join to Regions Definitions</h1>

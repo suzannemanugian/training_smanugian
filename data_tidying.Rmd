@@ -40,6 +40,9 @@ data_catch <- read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b
 [1] Remove unnecessary columns
 [2] Check column types
 [3] Reshape data
+[4] group and summarize data
+
+
 
 [1] 
 Remove unnecessary columns
@@ -67,6 +70,9 @@ There is one, line 401, which is "I" and not "1"
 ```{r}
 xx <- which(is.na(catch_clean$Chinook))
 xx
+
+xy <- which(is.na(data_catch_clean$Chinook))
+  xy
 ```
 Remove the error, replace the "I" with "1"
 Replace I with the character 1 otherwise leave it as is
@@ -76,10 +82,65 @@ catch_clean <- data_catch %>%
   mutate(Chinook = if_else(Chinook == "I", "1", Chinook)) %>% 
   mutate(Chinook = as.integer(Chinook))
 
-glimpse(catch_clean)
+data_catch_clean <- catch_clean %>% 
+  select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum)
+
+glimpse(data_catch_clean)
+```
+
+[3] 
+reshape data
+
+Pivot longer, have wide table pivoting it to long
+first argument, columns over which you want to pivot over (not region or year)
+second argument = names to (column create out of column names) and values to (the actual catch data)
+
+```{r}
+catch_long <- data_catch_clean %>% 
+  pivot_longer(cols = -c(Region, Year), names_to = "species", values_to = "catch")
+
+head(catch_long)
+```
+
+Pivot wider is opposite of longer
+Just run through as an example
+```{r}
+  catch_wide <- catch_long %>%
+  pivot_wider(names_from = Region, values_from = catch)
+
+head(catch_wide)
+```
+
+Rename catch_long override it with another catch_long
+This is "less brittle" than doing the rename in base R because it may break silently 
+Then you may want to run mutate to get catch column that is actually number of fish
+```{r}
+catch_long <- catch_long %>%
+  rename(catch_thousands = catch) %>%
+  mutate(catch = catch_thousands * 1000)
+
+head(catch_long)
+```
+
+[4]
+group and summarize data
+
+```{r}
+mean_region <- catch_long %>%
+  group_by(Region) %>%
+  summarise(catch_mean = mean(catch_thousands))
+```
+```{r}
+sd_region <- catch_long %>%
+  group_by(Region) %>%
+  summarise(std_region = sd(catch_thousands))
 ```
 
 
 
 
 # Join to Regions Definitions
+
+
+
+
