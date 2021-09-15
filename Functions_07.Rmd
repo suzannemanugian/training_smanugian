@@ -1,0 +1,148 @@
+---
+title: "Functions_07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, clear_workspace}
+
+rm(list=ls())
+
+```
+
+
+# Day 3 of Week 1, see the .R file on workstation -- > 
+
+## Set up some test data
+Provide a vector, calculate the Celcius value for each one of the F values and do it manually for all 4
+
+```{r, load_data}
+
+airtemps <- c(212, 78.3, 30, 32)
+
+```
+
+```{r, FtoC_poorly}
+
+celcius1 <- (airtemps[1] - 32) * 5/9
+celcius1
+celcius2 <- (airtemps[2] - 32) * 5/9
+celcius2
+celcius3 <- (airtemps[3] - 32) * 5/9
+celcius3
+celcius4 <- (airtemps[4] - 32) * 5/9
+celcius4
+
+```
+
+
+Provide a vector and do the same thing using a function, want it to take F value as input, create a C value as output (return value)
+```{r, FtoC}
+
+FtoC <- function(fahr) {
+  celcius <- (fahr - 32) * 5/9
+  return(celcius)
+}
+  
+celcius5 <- FtoC(airtemps[1])
+celcius5
+celcius1 == celcius5
+
+```
+Show how to use functions to calculate vectorized values
+```{r, FtoC_OnArray}
+
+celcius6 <- FtoC(airtemps)
+celcius6
+
+```
+
+Create my own function, C to F
+```{r, CtoF}
+
+CtoF <- function(celcius) {
+  fahr <- (celcius*9/5) + 32
+  return(fahr)
+}
+
+fahr <- CtoF(celcius6)
+fahr
+fahr == airtemps
+```
+Take F values as input but instead of just doing 1 thing do 2 things
+[1] calculate C from F (same as before)
+[2] calculate a kelvin value
+[3] return multiple different values calculated within the function in a single array (telling sequence to call a lot of values -100 to 100)
+```{r, FtoCtoK}
+
+FtoCtoK <- function(fahr) {
+  celcius <- (fahr - 32) * 5/9
+  kelvin <- celcius + 273.15
+  return(list(fahr = fahr, celcius = celcius, kelvin = kelvin))
+}
+
+temps_df <- data.frame(FtoCtoK(seq(-100, 100, 10)))
+temps_df
+
+```
+
+Use function to perform parts of data analysis that create graphs and plots
+Figure out styling and formatting you want for your plots so you can do it once and then apply it
+Build scatter plot of F vs C data from above
+If someone does not provide a base_size parameter then it will default to 9 as we request it
+[1] turns off axis ticks
+[2] makes the size of text to base-size you set
+```{r, themes_plot}
+themes_plot <- function(base_size = 9){
+  ggplot2::theme(
+    axis.ticks = ggplot2::element_blank(),
+    text = ggplot2::element_text(family = 'Helvetica', color = 'gray30', size = base_size)
+  )
+  
+}
+
+library(ggplot2)
+
+ggplot(temps_df, mapping = aes(x = fahr, y = celcius, color = kelvin)) + 
+  geom_point() + 
+  themes_plot(10)
+
+
+```
+
+
+Scatter plot 
+pass in a dataframe
+2 new parameters the point size and the font-size passing in the dataframe temps_df
+can use multiple variables or multiple arguments to customize 
+```{r, scatterplot}
+scatterplot <- function(df, point_size = 2, font_size=9) {
+  ggplot(df, mapping=aes(x=fahr, y=celcius, color=kelvin)) +
+    geom_point(size=point_size) +
+    themes_plot(font_size)
+}
+
+scatterplot(temps_df, point_size = 3, font_size = 16)
+
+```
+
+
+
+
+
+
+```{r}
+
+
+```
+
+
+
+
+
+
+
