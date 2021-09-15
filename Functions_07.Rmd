@@ -14,6 +14,13 @@ rm(list=ls())
 
 ```
 
+```{r, install}
+library(devtools)
+library(usethis)
+library(roxygen2)
+library(ggplot2)
+```
+
 
 # Day 3 of Week 1, see the .R file on workstation -- > 
 
@@ -105,8 +112,6 @@ themes_plot <- function(base_size = 9){
   
 }
 
-library(ggplot2)
-
 ggplot(temps_df, mapping = aes(x = fahr, y = celcius, color = kelvin)) + 
   geom_point() + 
   themes_plot(10)
@@ -132,9 +137,12 @@ scatterplot(temps_df, point_size = 3, font_size = 16)
 
 
 
-
-
-
+## Packages
+What happens when you want to write a function that you want to use ALL the time?
+Packages!
+[1] You can create a separate .R file and then use the source command to run in the environment you're in
+But with [1] you'd need a path so it's not entirely portable
+[2] 2 mechanisms to distribute: upload to GitHub or distribute package through cran (submit to cran and then anyone can get it)
 ```{r}
 
 
